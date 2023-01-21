@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Async Race</title>
+  </head>
+  <body>
+    <header class="header">
+      <ul class="nav">
+        <li><a href="#garage">Garage</a></li>
+        <li><a href="#winners">Winners</a></li>
+      </ul>
+    </header>
+    <div id="content">
+      <div class="car-creation-container">
+        <div class="create-car-container">
+          <input
+            placeholder="New Car Name"
+            class="car-name-input"
+            type="text"
+            name="name"
+            id=""
+          />
+          <input type="color" id="color" name="color" value="#e66465" />
+          <button>CREATE</button>
+        </div>
+        <div class="modify-car-container">
+          <input
+            placeholder="Update Car Name"
+            class="car-name-input"
+            type="text"
+            name="update-name"
+            id=""
+          />
+          <input type="color" id="color" name="color" value="#e66465" />
+          <button>MODIFY</button>
+        </div>
+      </div>
+      <h2 class="page-name">Garage <span>Total Cars: </span></h2>
+      <h3 class="page-number">Page Number:</h3>
+      <ul id="car-list">
+        <car-item name="Asd"></car-item>
+        <car-item name="ZXx"></car-item>
+
+        <car-item name="Fasd"></car-item>
+
+        <car-item name="bcvb"></car-item>
+      </ul>
+
+      <div class="pagination-controls">
+        <button>Prev Page</button><button>Next Page</button>
+      </div>
+    </div>
+  </body>
+</html>
