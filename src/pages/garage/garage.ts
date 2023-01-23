@@ -4,6 +4,37 @@ class Garage extends HTMLElement {
     this.attachShadow({ mode: 'open' });
   }
 
+  static generateCarName() {
+    const manufacturers = [
+      'Ford',
+      'Chevrolet',
+      'Toyota',
+      'Honda',
+      'Nissan',
+      'Hyundai',
+      'Kia',
+      'Mazda',
+      'BMW',
+      'Mercedes',
+    ];
+    const models = [
+      'Mustang',
+      'Camaro',
+      'Corolla',
+      'Civic',
+      'Altima',
+      'Elantra',
+      'Soul',
+      '3',
+      '5',
+      'C-Class',
+    ];
+    const manufacturer =
+      manufacturers[Math.floor(Math.random() * manufacturers.length)];
+    const model = models[Math.floor(Math.random() * models.length)];
+    return `${manufacturer} ${model}`;
+  }
+
   connectedCallback() {
     this.render();
 
@@ -123,6 +154,26 @@ class Garage extends HTMLElement {
       });
     });
 
+    // handle 100 car generation
+    const generateBtn = this.shadowRoot?.getElementById('generate-btn');
+    generateBtn?.addEventListener('click', () => {
+      for (let i = 0; i < 100; i += 1) {
+        const car = { name: Garage.generateCarName(), color: 'red' };
+        fetch(`${serverUrl}/garage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(car),
+        }).then((response) => {
+          if (response.ok) {
+            console.log('Car created successfully');
+            renderCarsList();
+          } else {
+            console.log('Error creating the car');
+          }
+        });
+      }
+    });
+
     // load cars list on first render
     renderCarsList();
   }
@@ -179,6 +230,7 @@ class Garage extends HTMLElement {
             <button type="submit">UPDATE</button>
           </form>        </div>
         </div>
+        <button id='race-btn'>RACE</button><button id='reset-all-btn'>RESET</button><button id='generate-btn'>GENERATE CARS</button>
         <h2 class="page-name">Garage <span id="total-cars">Total Cars: </span></h2>
         <h3 class="page-number">Page Number:</h3>
         <ul id="car-list"></ul>
