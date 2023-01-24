@@ -1,61 +1,71 @@
+const template = document.createElement('template');
+template.innerHTML = `
+<style>
+.modal {
+  display: none; 
+  position: fixed; 
+  z-index: 1; 
+  padding-top: 100px; 
+  left: 0;
+  top: 0;
+  width: 100%; 
+  height: 100%; 
+  overflow: auto; 
+  background-color: rgb(0,0,0); 
+  background-color: rgba(0,0,0,0.4); 
+}
+.show{
+  display: flex;
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+/* The Close Button */
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+</style>
+<div id="modal" class="modal">
+<div class="modal-content">
+  <span class="close">&times;</span>
+  <slot></slot>
+</div>
+</div>
+`;
+
 class ModalWindow extends HTMLElement {
-  modalContainer: HTMLDivElement;
-
-  modalOverlay: HTMLDivElement;
-
-  modalContent: HTMLDivElement;
-
-  closeButton: HTMLButtonElement;
-
   constructor() {
     super();
-
-    // Create the modal container
-    this.modalContainer = document.createElement('div');
-    this.modalContainer.classList.add('modal-container');
-
-    // Create the modal overlay
-    this.modalOverlay = document.createElement('div');
-    this.modalOverlay.classList.add('modal-overlay');
-
-    // Create the modal content container
-    this.modalContent = document.createElement('div');
-    this.modalContent.classList.add('modal-content');
-
-    // Create the close button
-    this.closeButton = document.createElement('button');
-    this.closeButton.classList.add('modal-close');
-    this.closeButton.innerHTML = 'x';
-
-    // Append the close button to the modal content container
-    this.modalContent.appendChild(this.closeButton);
-
-    // Append the modal content container to the modal container
-    this.modalContainer.appendChild(this.modalContent);
-
-    // Append the modal container and overlay to the shadow root
-    this.attachShadow({ mode: 'open' }).appendChild(this.modalContainer);
-    this.attachShadow({ mode: 'open' }).appendChild(this.modalOverlay);
-
-    // Add event listener for the close button
-    this.closeButton.addEventListener('click', () => {
-      this.hide();
-    });
-  }
-
-  connectedCallback() {
-    // Add the modal content
-    this.modalContent.innerHTML = this.innerHTML;
+    const shadow = this.attachShadow({ mode: 'open' });
+    shadow.append(template.content.cloneNode(true));
+    const closeButton = this.shadowRoot!.querySelector('.close');
+    closeButton?.addEventListener('click', () => this.hide());
   }
 
   show() {
-    this.modalContainer.classList.add('active');
-    this.modalOverlay.classList.add('active');
+    const modal = this.shadowRoot!.getElementById('modal');
+    modal?.classList.add('show');
   }
 
   hide() {
-    this.modalContainer.classList.remove('active');
-    this.modalOverlay.classList.remove('active');
+    const modal = this.shadowRoot!.getElementById('modal');
+    modal?.classList.remove('show');
   }
 }
 

@@ -1,4 +1,5 @@
 import * as CarControls from '../../components/carControls';
+import ModalWindow from '../../components/modal-window';
 
 class Garage extends HTMLElement {
   private _currentPage: number;
@@ -182,12 +183,34 @@ class Garage extends HTMLElement {
       'carFinished',
       (event) => {
         if (raceIsOn) {
-          CarControls.handleWin(
-            (event as CustomEvent).detail.id,
-            new Date().getTime() - startTime,
-          );
-
+          const finishTime = new Date().getTime() - startTime;
+          CarControls.handleWin((event as CustomEvent).detail.id, finishTime);
           raceIsOn = false;
+          const getCar = async (
+            id: number,
+          ): Promise<{
+            name: string;
+            color: string;
+            id: string;
+          }> => {
+            const url = `${serverUrl}/garage/${id}`;
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            return data;
+          };
+          let carname = '';
+          getCar((event as CustomEvent).detail.id).then((response) => {
+            carname = response.name;
+            const modal = this.shadowRoot!.getElementById(
+              'modal',
+            ) as ModalWindow;
+            modal.innerHTML = `${carname} finished in ${(
+              finishTime / 1000
+            ).toFixed(3)} seconds`;
+            modal!.show();
+          });
         }
       },
       true,
@@ -308,6 +331,7 @@ class Garage extends HTMLElement {
     }
     </style>
     <div class="garage-page">
+        <modal-window id='modal'></modal-window>
       <div id="content">
         <div class="car-creation-container">
           <form id="create-car-form" class="create-car-container">
@@ -321,7 +345,6 @@ class Garage extends HTMLElement {
             <button type="submit">CREATE</button>
           </form>
           <form id="update-car-form" class="update-car-container">
-            
             <input
               placeholder="Existing Car Name"
               class="car-name-input"

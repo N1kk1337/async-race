@@ -12,14 +12,16 @@ export async function handleWin(id: number, time: number) {
       }),
     });
   } else {
-    console.log(data.find((element: { id: number }) => element.id === id).wins);
     fetch(`http://127.0.0.1:3000/winners/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         wins:
           data.find((element: { id: number }) => element.id === id).wins + 1,
-        time,
+        time:
+          data.find((element: { id: number }) => element.id === id).time > time
+            ? time
+            : data.find((element: { id: number }) => element.id === id).wins,
       }),
     });
   }
