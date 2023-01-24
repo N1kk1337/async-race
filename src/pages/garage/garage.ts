@@ -1,13 +1,37 @@
 import * as CarControls from '../../components/carControls';
 
 class Garage extends HTMLElement {
+  private _currentPage: number;
+
   constructor() {
     super();
+    this._currentPage = 1;
+
     this.attachShadow({ mode: 'open' });
   }
 
+  public set currentPage(page: number) {
+    this._currentPage = page;
+  }
+
+  public get currentPage(): number {
+    return this._currentPage;
+  }
+
+  //   static get observedAttributes() {
+  //     return ['currentPage'];
+  //   }
+
+  //   attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+  //     if (name === 'currentPage') {
+  //       this.currentPage = Number(newValue);
+  //     }
+  //     this.render();
+  //   }
+
   connectedCallback() {
     this.render();
+
     interface Car {
       name: string;
       color: string;
@@ -33,8 +57,8 @@ class Garage extends HTMLElement {
 
       return { data, totalCarsNumber };
     }
-    function renderCarsList(page = 1) {
-      getCars(page).then((response) => {
+    const renderCarsList = (page = 1) => {
+      getCars(this.currentPage).then((response) => {
         carList!.innerHTML = '';
         response.data.map((car) => {
           const carItem = document.createElement('car-item');
@@ -45,14 +69,12 @@ class Garage extends HTMLElement {
           carList!.appendChild(carItem);
         });
       });
-    }
-
-    let currentPage = 1;
+    };
 
     this.addEventListener(
       'deleteCar',
       (event) => {
-        renderCarsList(currentPage);
+        renderCarsList(this.currentPage);
       },
       true,
     );
@@ -194,18 +216,34 @@ class Garage extends HTMLElement {
     const prevBtn = this.shadowRoot!.getElementById('prev-btn');
     const nextBtn = this.shadowRoot!.getElementById('next-btn');
     const pageNumber = this.shadowRoot!.querySelector('.page-number');
+    pageNumber!.innerHTML = `Page Number: ${this.currentPage}`;
+
     prevBtn!.addEventListener('click', () => {
-      if (currentPage > 1) {
-        currentPage -= 1;
-        renderCarsList(currentPage);
-        pageNumber!.innerHTML = `Page Number: ${currentPage}`;
+      if (this.currentPage! > 1) {
+        this.currentPage! -= 1;
+        renderCarsList(this.currentPage);
+        pageNumber!.innerHTML = `Page Number: ${this.currentPage}`;
+        this.dispatchEvent(
+          new CustomEvent('garageCurrentPage', {
+            bubbles: true,
+            composed: true,
+            detail: { currentPage: this.currentPage },
+          }),
+        );
       }
     });
     nextBtn!.addEventListener('click', () => {
-      if (currentPage < Math.ceil(totalCarsNumber / 7)) {
-        currentPage += 1;
-        renderCarsList(currentPage);
-        pageNumber!.innerHTML = `Page Number: ${currentPage}`;
+      if (this.currentPage! < Math.ceil(totalCarsNumber / 7)) {
+        this.currentPage! += 1;
+        renderCarsList(this.currentPage);
+        pageNumber!.innerHTML = `Page Number: ${this.currentPage}`;
+        this.dispatchEvent(
+          new CustomEvent('garageCurrentPage', {
+            bubbles: true,
+            composed: true,
+            detail: { currentPage: this.currentPage },
+          }),
+        );
       }
     });
 
@@ -218,30 +256,65 @@ class Garage extends HTMLElement {
     <style>
     .create-car-container,
     .update-car-container {
-      margin: 20px;
       display: flex;
       gap: 10px;
     }
+    .car-creation-container{
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+        margin-bottom:10px;
+    }
     
-    .car-name-input {
-      border: 4px solid blue;
-      border-radius: 10px;
+    
+    input{
+        color: black;
+        font-size: 20px;
+        border: 4px solid orange;
+        border-radius: 10px;
+    }
+    input[type="color"]{
+        height: auto;
+    }
+    label{
+        color: black;
+        font-size: 20px;
+        border: 4px solid orange;
+        border-radius: 10px;
     }
     
     .update-car-id {
-      border: 4px solid blue;
       border-radius: 10px;
       text-align: center;
       padding: 5px;
+      visibility: hidden;
     }
     
     .pagination-controls {
+        margin-top: 20px;
       display: flex;
       gap: 20px;
     }
 
     ul{
         padding: 0;
+        margin:0;
+        display:flex;
+        flex-direction:column;
+        gap: 5px;
+    }
+    button{
+        color: black;
+        text-decoration: none;
+        background-color: orange;
+        font-size: 20px;
+        padding: 4px;
+        border: 4px solid orange;
+        border-radius: 10px;
+    }
+    .race-container{
+        display:flex;
+        gap:10px;
     }
     </style>
     <div class="garage-page">
@@ -258,7 +331,7 @@ class Garage extends HTMLElement {
             <button type="submit">CREATE</button>
           </form>
           <form id="update-car-form" class="update-car-container">
-            <label class="update-car-id" id="update-car-id">0</label>
+            
             <input
               placeholder="Existing Car Name"
               class="car-name-input"
@@ -267,9 +340,10 @@ class Garage extends HTMLElement {
             />
             <input type="color" id="update-color-input" value="#e66465" />
             <button type="submit">UPDATE</button>
+            <label class="update-car-id" id="update-car-id">0</label>
           </form>        </div>
         </div>
-        <button id='race-btn'>RACE</button><button id='reset-btn'>RESET</button><button id='generate-btn'>GENERATE CARS</button>
+        <div class="race-container"><button id='race-btn'>RACE</button><button id='reset-btn'>RESET</button><button id='generate-btn'>GENERATE CARS</button></div>
         <h2 class="page-name">Garage <span id="total-cars">Total Cars: </span></h2>
         <h3 class="page-number">Page Number: 1</h3>
         <ul id="car-list"></ul>

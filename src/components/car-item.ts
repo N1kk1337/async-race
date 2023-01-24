@@ -95,34 +95,32 @@ class CarItem extends HTMLElement {
     button {
       color: white;
       text-decoration: none;
-      background-color: blue;
+      background-color: orange;
       font-size: 20px;
       padding: 4px;
-      border: 4px solid blue;
+      border: 4px solid orange;
       border-radius: 10px;
     }
     .car {
         display: flex;
         flex-direction: column;
-        border: 2px solid blue;
-        padding: 4px 4px;
-        margin: 8px 8px;
+        border: 2px solid grey;
+        padding: 8px 8px;
     }
     .car-img {
       transform: scaleX(-1);
       position: absolute;
-      height: 100%;
       left: 0;
-      bottom: 0;
-
+      width: 80px;
 
     }
     .car-container {
       position: relative;
       width: 100%;
-      height: 100px;
+      height: 60px;
       overflow: hidden;
-  }
+
+    }
     
     @keyframes moveCar {
       from {
@@ -142,12 +140,30 @@ class CarItem extends HTMLElement {
     }
 
     button {
-        border: 2px solid blue;
+        border: 2px solid orange;
+        color: black;
+    }
+    .button-container{
+      display:flex;
+      flex-direction:row;
+      gap:10px;
+    }
+    .car-name{
+      border: 2px solid orange;
+      font-size:20px;
+      text-align: center;
+      border-radius: 10px;
+      padding: 4px;
     }
     </style>
     <div class="car">
-        <div><button id='select-btn'>Select</button><button id='delete-btn'>Remove</button></div>
-                    <p>${this.name}</p> 
+        <div class='button-container'><button id='select-btn'>Select</button><button id='delete-btn'>Remove</button><span class='car-name'>${this.name}</span>
+        <button id='engine-start-btn'>Start Engine
+        </button>
+        <button id='engine-reset-btn'>Reset
+        </button>                   
+       </div>
+                    
                     <div class="car-container">
                       <svg class='car-img animation-stopped'  viewBox="0 0 512 512" id="svg2" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg">
                       <defs id="defs4"/>
@@ -162,12 +178,7 @@ class CarItem extends HTMLElement {
                     </div>
                     
                   </object>
-                    <div>
-                    <button id='engine-start-btn'>Start Engine
-                    </button>
-                    <button id='engine-reset-btn'>Reset
-                    </button>                   
-                    </div>
+                    
     </div>
     `;
     const engineStartBtn = this.shadowRoot!.getElementById('engine-start-btn');
