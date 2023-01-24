@@ -27,7 +27,6 @@ class CarItem extends HTMLElement {
     this.addEventListener(
       'stopCar',
       (event) => {
-        car.classList.remove('animation-start');
         car.classList.add('animation-stop');
       },
       true,
@@ -35,7 +34,6 @@ class CarItem extends HTMLElement {
     this.addEventListener(
       'startCar',
       (event) => {
-        console.log(event);
         car.style.animationDuration = `${
           300 / (event as CustomEvent).detail.velocity
         }s`;
@@ -57,16 +55,19 @@ class CarItem extends HTMLElement {
     });
     const deleteBtn = this.shadowRoot!.getElementById('delete-btn');
     deleteBtn!.addEventListener('click', async () => {
+      await fetch(`http://127.0.0.1:3000/garage/${this.id}`, {
+        method: 'DELETE',
+      });
+      await fetch(`http://127.0.0.1:3000/winners/${this.id}`, {
+        method: 'DELETE',
+      });
+
       this.dispatchEvent(
         new CustomEvent('deleteCar', {
           bubbles: true,
           composed: true,
         }),
       );
-
-      await fetch(`http://127.0.0.1:3000/garage/${this.id}`, {
-        method: 'DELETE',
-      });
 
       this.remove();
     });

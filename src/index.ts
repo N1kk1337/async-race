@@ -3,11 +3,15 @@ import CarItem from './components/car-item';
 import Winners from './pages/winners/winners';
 import Garage from './pages/garage/garage';
 import CarControlButton from './components/car-control-btn';
+import WinnerElement from './components/winner-item';
+import CarSvg from './components/car-svg';
 
 customElements.define('car-item', CarItem);
+customElements.define('car-svg', CarSvg);
 customElements.define('winners-page', Winners);
 customElements.define('garage-page', Garage);
 customElements.define('car-control-btn', CarControlButton);
+customElements.define('winner-item', WinnerElement);
 
 const body = document.getElementById('body');
 body!.innerHTML = `

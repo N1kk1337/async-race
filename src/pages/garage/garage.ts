@@ -6,52 +6,53 @@ class Garage extends HTMLElement {
     this.attachShadow({ mode: 'open' });
   }
 
-  static generateRndCar() {
-    const manufacturers = [
-      'Ford',
-      'Chevrolet',
-      'Toyota',
-      'Honda',
-      'Nissan',
-      'Hyundai',
-      'Kia',
-      'Mazda',
-      'BMW',
-      'Mercedes',
-    ];
-    const models = [
-      'Mustang',
-      'Camaro',
-      'Corolla',
-      'Civic',
-      'Altima',
-      'Elantra',
-      'Soul',
-      '3',
-      '5',
-      'C-Class',
-    ];
-    const manufacturer =
-      manufacturers[Math.floor(Math.random() * manufacturers.length)];
-    const model = models[Math.floor(Math.random() * models.length)];
-    const carName = `${manufacturer} ${model}`;
-
-    const color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
-
-    return { name: carName, color };
-  }
-
   connectedCallback() {
     this.render();
-
-    let currentPage = 1;
+    interface Car {
+      name: string;
+      color: string;
+      id: number;
+    }
+    const serverUrl = 'http://127.0.0.1:3000';
+    const carList = this.shadowRoot!.getElementById('car-list');
 
     const totalCars = this.shadowRoot!.getElementById('total-cars');
     let totalCarsNumber = 0;
+    async function getCars(
+      page: number = 1,
+      limit?: number,
+    ): Promise<{ data: Car[]; totalCarsNumber: number }> {
+      let url = `${serverUrl}/garage`;
+
+      url += `?_page=${page}&_limit=7`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+      totalCarsNumber = Number(response.headers.get('X-Total-Count'));
+      totalCars!.innerHTML = `Total Cars: ${totalCarsNumber}`;
+
+      return { data, totalCarsNumber };
+    }
+    function renderCarsList(page = 1) {
+      getCars(page).then((response) => {
+        carList!.innerHTML = '';
+        response.data.map((car) => {
+          const carItem = document.createElement('car-item');
+          carItem.setAttribute('data-id', car.id.toString());
+          carItem.setAttribute('id', car.id.toString());
+          carItem.setAttribute('color', car.color);
+          carItem.setAttribute('name', car.name);
+          carList!.appendChild(carItem);
+        });
+      });
+    }
+
+    let currentPage = 1;
+
     this.addEventListener(
       'deleteCar',
       (event) => {
-        totalCars!.innerHTML = `Total Cars: ${totalCarsNumber - 1}`;
+        renderCarsList(currentPage);
       },
       true,
     );
@@ -72,44 +73,6 @@ class Garage extends HTMLElement {
       updateCarId!.innerText = (e as CustomEvent).detail.id;
       updateColorInput.value = (e as CustomEvent).detail.color;
     });
-
-    interface Car {
-      name: string;
-      color: string;
-      id: number;
-    }
-    const serverUrl = 'http://127.0.0.1:3000';
-    const carList = this.shadowRoot!.getElementById('car-list');
-
-    async function getCars(
-      page: number = 1,
-      limit?: number,
-    ): Promise<{ data: Car[]; totalCarsNumber: number }> {
-      let url = `${serverUrl}/garage`;
-
-      url += `?_page=${page}&_limit=7`;
-
-      const response = await fetch(url);
-      const data = await response.json();
-      totalCarsNumber = Number(response.headers.get('X-Total-Count'));
-      totalCars!.innerHTML = `Total Cars: ${totalCarsNumber}`;
-
-      return { data, totalCarsNumber };
-    }
-
-    function renderCarsList(page = 1) {
-      getCars(page).then((response) => {
-        carList!.innerHTML = '';
-        response.data.map((car) => {
-          const carItem = document.createElement('car-item');
-          carItem.setAttribute('data-id', car.id.toString());
-          carItem.setAttribute('id', car.id.toString());
-          carItem.setAttribute('color', car.color);
-          carItem.setAttribute('name', car.name);
-          carList!.appendChild(carItem);
-        });
-      });
-    }
 
     // handle car creation with custom data
     const createCarForm = this.shadowRoot!.getElementById(
@@ -165,7 +128,7 @@ class Garage extends HTMLElement {
     const generateBtn = this.shadowRoot?.getElementById('generate-btn');
     generateBtn?.addEventListener('click', () => {
       for (let i = 0; i < 100; i += 1) {
-        const car = Garage.generateRndCar();
+        const car = CarControls.generateRndCar();
         fetch(`${serverUrl}/garage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -182,12 +145,41 @@ class Garage extends HTMLElement {
     });
 
     // handle group race
+    let raceIsOn = false;
+    let startTime: number;
+
     const raceBtn = this.shadowRoot!.getElementById('race-btn');
     raceBtn?.addEventListener('click', () => {
+      raceIsOn = true;
+      startTime = new Date().getTime();
+
       this.shadowRoot!.querySelectorAll('car-item').forEach((e) => {
         CarControls.startCar(e, Number(e.id));
       });
     });
+
+    // function getStartTime() {
+    //     startTime = new Date().getTime()
+    // }
+
+    // function getEndTime() {
+    //     endTime = new Date().getTime()
+    // }
+
+    this.addEventListener(
+      'carFinished',
+      (event) => {
+        if (raceIsOn) {
+          CarControls.handleWin(
+            (event as CustomEvent).detail.id,
+            new Date().getTime() - startTime,
+          );
+
+          raceIsOn = false;
+        }
+      },
+      true,
+    );
 
     // handle group reset
     const resetBtn = this.shadowRoot!.getElementById('reset-btn');
