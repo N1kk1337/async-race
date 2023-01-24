@@ -1,9 +1,11 @@
+import * as CarControls from './carControls';
+
 class CarItem extends HTMLElement {
   name: string | undefined;
 
   color: string | undefined;
 
-  velosity: string | undefined;
+  velocity: string | undefined;
 
   constructor() {
     super();
@@ -12,6 +14,36 @@ class CarItem extends HTMLElement {
 
   connectedCallback() {
     this.render();
+
+    const car = this.shadowRoot?.querySelector('.car-img') as HTMLElement;
+    this.addEventListener(
+      'resetCar',
+      (event) => {
+        car.classList.remove('animation-start');
+        car.classList.remove('animation-stop');
+      },
+      true,
+    );
+    this.addEventListener(
+      'stopCar',
+      (event) => {
+        car.classList.remove('animation-start');
+        car.classList.add('animation-stop');
+      },
+      true,
+    );
+    this.addEventListener(
+      'startCar',
+      (event) => {
+        console.log(event);
+        car.style.animationDuration = `${
+          300 / (event as CustomEvent).detail.velocity
+        }s`;
+        car.classList.remove('animation-stop');
+        car.classList.add('animation-start');
+      },
+      true,
+    );
 
     const selectBtn = this.shadowRoot!.getElementById('select-btn');
     selectBtn!.addEventListener('click', async () => {
@@ -81,7 +113,8 @@ class CarItem extends HTMLElement {
       height: 100%;
       left: 0;
       bottom: 0;
-      animation: moveCar linear;
+
+
     }
     .car-container {
       position: relative;
@@ -95,11 +128,15 @@ class CarItem extends HTMLElement {
           left: 0;
       }
       to {
-          left: calc(100% - 50px);
+          left: calc(100% - 120px);
       }
     }
 
-    .animation-stopped {
+    .animation-start {
+      animation: moveCar linear;
+      animation-fill-mode: forwards;    
+    }
+    .animation-stop{
       animation-play-state: paused;
     }
 
@@ -125,29 +162,21 @@ class CarItem extends HTMLElement {
                     
                   </object>
                     <div>
-                        <car-control-btn purpose='start' id=${this.id}></car-control-btn>
-                        <car-control-btn purpose='stop' id=${this.id}></car-control-btn>
+                    <button id='engine-start-btn'>Start Engine
+                    </button>
+                    <button id='engine-reset-btn'>Reset
+                    </button>                   
                     </div>
     </div>
     `;
-    const car = this.shadowRoot?.querySelector('.car-img') as HTMLElement;
-    this.addEventListener(
-      'stopCar',
-      (event) => {
-        car.classList.add('animation-stopped');
-      },
-      true,
-    );
-    this.addEventListener(
-      'startCar',
-      (event) => {
-        car.style.animationDuration = `${
-          300 / (event as CustomEvent).detail.velocity
-        }s`;
-        car.classList.remove('animation-stopped');
-      },
-      true,
-    );
+    const engineStartBtn = this.shadowRoot!.getElementById('engine-start-btn');
+    const engineResetBtn = this.shadowRoot!.getElementById('engine-reset-btn');
+    engineStartBtn?.addEventListener('click', () => {
+      CarControls.startCar(this, Number(this.id));
+    });
+    engineResetBtn?.addEventListener('click', () => {
+      CarControls.resetCar(this, Number(this.id));
+    });
   }
 
   get id(): string {

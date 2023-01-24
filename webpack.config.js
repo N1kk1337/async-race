@@ -6,7 +6,7 @@ module.exports = {
   entry: path.resolve(__dirname, './src/index.ts'),
   output: {
     filename: 'bundle.js',
-    path: path.resolve(__dirname, './dist'),
+    path: path.resolve(__dirname, './build'),
     assetModuleFilename: 'src/assets/images/[name][ext]',
   },
   mode: 'development',
@@ -37,5 +37,4 @@ module.exports = {
     }),
     new CleanWebpackPlugin(),
   ],
-
 };

@@ -1,10 +1,12 @@
+import * as CarControls from '../../components/carControls';
+
 class Garage extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
   }
 
-  static generateCarName() {
+  static generateRndCar() {
     const manufacturers = [
       'Ford',
       'Chevrolet',
@@ -32,19 +34,24 @@ class Garage extends HTMLElement {
     const manufacturer =
       manufacturers[Math.floor(Math.random() * manufacturers.length)];
     const model = models[Math.floor(Math.random() * models.length)];
-    return `${manufacturer} ${model}`;
+    const carName = `${manufacturer} ${model}`;
+
+    const color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+
+    return { name: carName, color };
   }
 
   connectedCallback() {
     this.render();
 
+    let currentPage = 1;
+
     const totalCars = this.shadowRoot!.getElementById('total-cars');
+    let totalCarsNumber = 0;
     this.addEventListener(
       'deleteCar',
       (event) => {
-        const match = totalCars!.innerText.match(/\d+/);
-        const number = parseInt(match![0], 10);
-        totalCars!.innerHTML = `Total Cars: ${number - 1}`;
+        totalCars!.innerHTML = `Total Cars: ${totalCarsNumber - 1}`;
       },
       true,
     );
@@ -75,32 +82,32 @@ class Garage extends HTMLElement {
     const carList = this.shadowRoot!.getElementById('car-list');
 
     async function getCars(
-      page?: number,
+      page: number = 1,
       limit?: number,
-    ): Promise<{ data: Car[]; totalCount: number }> {
+    ): Promise<{ data: Car[]; totalCarsNumber: number }> {
       let url = `${serverUrl}/garage`;
-      if (page && limit) {
-        url += `?_page=${page}&_limit=${limit}`;
-      }
+
+      url += `?_page=${page}&_limit=7`;
+
       const response = await fetch(url);
       const data = await response.json();
-      const totalCount = response.headers.get('X-Total-Count');
-      return { data, totalCount: totalCount ? parseInt(totalCount) : 0 };
+      totalCarsNumber = Number(response.headers.get('X-Total-Count'));
+      totalCars!.innerHTML = `Total Cars: ${totalCarsNumber}`;
+
+      return { data, totalCarsNumber };
     }
 
-    function renderCarsList() {
-      getCars().then((response) => {
-        let counter = 0;
+    function renderCarsList(page = 1) {
+      getCars(page).then((response) => {
         carList!.innerHTML = '';
         response.data.map((car) => {
           const carItem = document.createElement('car-item');
+          carItem.setAttribute('data-id', car.id.toString());
           carItem.setAttribute('id', car.id.toString());
           carItem.setAttribute('color', car.color);
           carItem.setAttribute('name', car.name);
           carList!.appendChild(carItem);
-          counter += 1;
         });
-        totalCars!.innerHTML = `Total Cars: ${counter}`;
       });
     }
 
@@ -158,7 +165,7 @@ class Garage extends HTMLElement {
     const generateBtn = this.shadowRoot?.getElementById('generate-btn');
     generateBtn?.addEventListener('click', () => {
       for (let i = 0; i < 100; i += 1) {
-        const car = { name: Garage.generateCarName(), color: 'red' };
+        const car = Garage.generateRndCar();
         fetch(`${serverUrl}/garage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -171,6 +178,42 @@ class Garage extends HTMLElement {
             console.log('Error creating the car');
           }
         });
+      }
+    });
+
+    // handle group race
+    const raceBtn = this.shadowRoot!.getElementById('race-btn');
+    raceBtn?.addEventListener('click', () => {
+      this.shadowRoot!.querySelectorAll('car-item').forEach((e) => {
+        CarControls.startCar(e, Number(e.id));
+      });
+    });
+
+    // handle group reset
+    const resetBtn = this.shadowRoot!.getElementById('reset-btn');
+    resetBtn?.addEventListener('click', () => {
+      this.shadowRoot!.querySelectorAll('car-item').forEach((e) => {
+        CarControls.resetCar(e, Number(e.id));
+      });
+    });
+
+    // pagination
+
+    const prevBtn = this.shadowRoot!.getElementById('prev-btn');
+    const nextBtn = this.shadowRoot!.getElementById('next-btn');
+    const pageNumber = this.shadowRoot!.querySelector('.page-number');
+    prevBtn!.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage -= 1;
+        renderCarsList(currentPage);
+        pageNumber!.innerHTML = `Page Number: ${currentPage}`;
+      }
+    });
+    nextBtn!.addEventListener('click', () => {
+      if (currentPage < Math.ceil(totalCarsNumber / 7)) {
+        currentPage += 1;
+        renderCarsList(currentPage);
+        pageNumber!.innerHTML = `Page Number: ${currentPage}`;
       }
     });
 
@@ -204,6 +247,10 @@ class Garage extends HTMLElement {
       display: flex;
       gap: 20px;
     }
+
+    ul{
+        padding: 0;
+    }
     </style>
     <div class="garage-page">
       <div id="content">
@@ -230,12 +277,12 @@ class Garage extends HTMLElement {
             <button type="submit">UPDATE</button>
           </form>        </div>
         </div>
-        <button id='race-btn'>RACE</button><button id='reset-all-btn'>RESET</button><button id='generate-btn'>GENERATE CARS</button>
+        <button id='race-btn'>RACE</button><button id='reset-btn'>RESET</button><button id='generate-btn'>GENERATE CARS</button>
         <h2 class="page-name">Garage <span id="total-cars">Total Cars: </span></h2>
-        <h3 class="page-number">Page Number:</h3>
+        <h3 class="page-number">Page Number: 1</h3>
         <ul id="car-list"></ul>
         <div class="pagination-controls">
-          <button>Prev Page</button> <button>Next Page</button>
+          <button id='prev-btn'>Prev Page</button> <button id='next-btn'>Next Page</button>
         </div>
       </div>
     </div>

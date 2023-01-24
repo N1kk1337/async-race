@@ -1,3 +1,5 @@
+import * as CarControls from './carControls';
+
 class CarControlButton extends HTMLElement {
   status: string | undefined;
 
@@ -25,26 +27,6 @@ class CarControlButton extends HTMLElement {
     this.render();
   }
 
-  stopCar() {
-    this.dispatchEvent(
-      new CustomEvent('stopCar', {
-        bubbles: true,
-        composed: true,
-        detail: { id: this.id },
-      }),
-    );
-  }
-
-  startCar(velocity: number) {
-    this.dispatchEvent(
-      new CustomEvent('startCar', {
-        bubbles: true,
-        composed: true,
-        detail: { id: this.id, velocity },
-      }),
-    );
-  }
-
   render() {
     this.shadowRoot!.innerHTML = `
       <style>
@@ -57,47 +39,15 @@ class CarControlButton extends HTMLElement {
       } 
       </button>
       `;
-    const engineControlBtn =
-      this.shadowRoot!.getElementById('engine-control-btn');
-    engineControlBtn!.addEventListener('click', async () => {
-      const newStatus = this.purpose === 'stop' ? 'stopped' : 'started';
-
-      // start the engine
-      const startResponse = await fetch(
-        `http://127.0.0.1:3000/engine?id=${this.id}&status=${newStatus}`,
-        {
-          method: 'PATCH',
-        },
-      );
-
-      // put the pedal to the metal
-      if (this.purpose !== 'stop') {
-        const startData = await startResponse.json();
-        this.startCar(startData.velocity);
-        fetch(`http://127.0.0.1:3000/engine?id=${this.id}&status=drive`, {
-          method: 'PATCH',
-        }).then((response) => {
-          if (response.status === 500) {
-            // if engine dies
-            this.stopCar();
-          } else {
-            console.log('доехали');
-            this.stopCar();
-          }
-        });
-      } else {
-        console.log('остановились');
-      }
-
-      // if (response.ok) {
-      //   const data = await response.json();
-      //   console.log(data);
-      //   this.status = newStatus;
-      //   this.render();
-      // } else {
-      //   console.error(response.statusText);
-      // }
-    });
+    // const engineControlBtn =
+    //   this.shadowRoot!.getElementById('engine-control-btn');
+    // engineControlBtn!.addEventListener('click', async () => {
+    //   if (this.purpose === 'stop') {
+    //     CarControls.stopCar(Number(this.id));
+    //   } else {
+    //     CarControls.startCar(Number(this.id));
+    //   }
+    // });
   }
 
   get id(): string {

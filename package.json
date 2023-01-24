@@ -1,9 +1,12 @@
 {
   "name": "async-race",
   "version": "1.0.0",
+  "homepage": "https://N1kk1337.github.io/async-race",
   "description": "",
   "main": "index.js",
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "webpack serve --open --config ./webpack.config.js --env mode=dev",
     "build": "webpack --config ./webpack.config.js --env mode=prod",
     "lint": "eslint . --ext .ts"
@@ -17,7 +20,6 @@
   "bugs": {
     "url": "https://github.com/N1kk1337/async-race/issues"
   },
-  "homepage": "https://github.com/N1kk1337/async-race#readme",
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.13.0",
     "@typescript-eslint/parser": "^5.0.0",
@@ -27,6 +29,7 @@
     "eslint": "^8.2.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.25.2",
+    "gh-pages": "^5.0.0",
     "html-webpack-plugin": "^5.5.0",
     "node-sass": "^8.0.0",
     "sass-loader": "^13.2.0",
