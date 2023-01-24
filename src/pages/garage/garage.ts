@@ -18,17 +18,6 @@ class Garage extends HTMLElement {
     return this._currentPage;
   }
 
-  //   static get observedAttributes() {
-  //     return ['currentPage'];
-  //   }
-
-  //   attributeChangedCallback(name: string, oldValue: string, newValue: string) {
-  //     if (name === 'currentPage') {
-  //       this.currentPage = Number(newValue);
-  //     }
-  //     this.render();
-  //   }
-
   connectedCallback() {
     this.render();
 
@@ -42,6 +31,7 @@ class Garage extends HTMLElement {
 
     const totalCars = this.shadowRoot!.getElementById('total-cars');
     let totalCarsNumber = 0;
+
     async function getCars(
       page: number = 1,
       limit?: number,
@@ -291,7 +281,7 @@ class Garage extends HTMLElement {
     }
     
     .pagination-controls {
-        margin-top: 20px;
+    margin-top: 20px;
       display: flex;
       gap: 20px;
     }

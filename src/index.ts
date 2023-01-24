@@ -5,6 +5,7 @@ import Garage from './pages/garage/garage';
 import CarControlButton from './components/car-control-btn';
 import WinnerElement from './components/winner-item';
 import CarSvg from './components/car-svg';
+import ModalWindow from './components/modal-window';
 
 customElements.define('car-item', CarItem);
 customElements.define('car-svg', CarSvg);
@@ -12,6 +13,7 @@ customElements.define('winners-page', Winners);
 customElements.define('garage-page', Garage);
 customElements.define('car-control-btn', CarControlButton);
 customElements.define('winner-item', WinnerElement);
+customElements.define('modal-window', ModalWindow);
 
 const body = document.getElementById('body');
 body!.innerHTML = `
@@ -31,11 +33,13 @@ root!.innerHTML = '<garage-page></garage-page>';
 const garageNavButton = document.getElementById('garage-nav-btn');
 const winnersNavButton = document.getElementById('winners-nav-btn');
 let garageCurrentPage = 1;
-console.log(garageCurrentPage);
+let winnersCurrentPage = 1;
 
 document.addEventListener('garageCurrentPage', (e: Event) => {
   garageCurrentPage = (e as CustomEvent).detail.currentPage;
-  console.log(garageCurrentPage);
+});
+document.addEventListener('winnersCurrentPage', (e: Event) => {
+  winnersCurrentPage = (e as CustomEvent).detail.currentPage;
 });
 
 garageNavButton?.addEventListener('click', () => {
@@ -46,5 +50,8 @@ garageNavButton?.addEventListener('click', () => {
 });
 
 winnersNavButton?.addEventListener('click', () => {
-  root!.innerHTML = '<winners-page></winners-page>';
+  root!.innerHTML = '';
+  const winnersPage = document.createElement('winners-page') as Garage;
+  winnersPage.currentPage = winnersCurrentPage;
+  root!.appendChild(winnersPage);
 });
